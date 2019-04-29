@@ -9,7 +9,7 @@
 #define VERSION "1.0"
 
 // We assume these start at GPIO 0
-const int number_leds = 6;
+const int number_leds = 8;
 
 void initialise();
 void update();
@@ -72,8 +72,8 @@ void update()
 
     float cpu_usage = get_cpu_usage();
     printf("cpu_usage: %f\n", cpu_usage);
-    //int leds_lit = cpu_usage/(100/(number_leds+1));
-
+    int leds_lit = cpu_usage/(100/(number_leds));
+    printf("leds_lit: %d\n", leds_lit);
     //for(int i=0; i < leds_lit; i++)
     //    digitalWrite(i, 1);
 }
