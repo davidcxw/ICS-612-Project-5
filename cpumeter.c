@@ -1,4 +1,5 @@
-// Michael Rodenhurst, 30/09/12
+// David Wang, Michael Omori
+// Inspired by Michael Rodenhurst, 30/09/12
 
 #include <stdio.h>
 #include <unistd.h>
@@ -82,6 +83,7 @@ void update()
     //char str[] = "This is tutorialspoint.com";
     //fp = fopen( "new_file" , "w" );
     fp = fopen("/sys/devices/virtual/LedBlink/LedBlink/period", "w");
+    // dd if=/dev/zero of=/dev/null
     //fwrite(str , 1 , sizeof(str) , fp );
     //fwrite(&leds_lit , sizeof(leds_lit), 1, fp );
     fprintf(fp, "%d", leds_lit);
