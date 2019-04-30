@@ -7,6 +7,10 @@
 #include <linux/gpio.h>
 #include <linux/kernel.h>
 #include <linux/delay.h>
+#include <linux/fs.h>
+#include <asm/segment.h>
+#include <asm/uaccess.h>
+#include <linux/buffer_head.h>
 
 //#include <stdio.h>
 //#include <unistd.h>
@@ -82,7 +86,7 @@ static int __init pix_init(void){
   {
        update();
        //sleep(1);
-       udelay(1000000);
+       //udelay(1000000);
        count += 1;
        if(count > 10) {
            break;
@@ -109,15 +113,51 @@ static void __exit pix_exit(void){
 int previous_tjif = 0;
 int previous_ijif = 0;
 
+struct file *file_open(const char *path, int flags, int rights) 
+{
+    struct file *filp = NULL;
+    mm_segment_t oldfs;
+    int err = 0;
+
+    oldfs = get_fs();
+    set_fs(get_ds());
+    filp = filp_open(path, flags, rights);
+    set_fs(oldfs);
+    if (IS_ERR(filp)) {
+        err = PTR_ERR(filp);
+        return NULL;
+    }
+    return filp;
+}
+
+void file_close(struct file *file) 
+{
+    filp_close(file, NULL);
+}
+
+int file_read(struct file *file, unsigned long long offset, unsigned char *data, unsigned int size) 
+{
+    mm_segment_t oldfs;
+    int ret;
+
+    oldfs = get_fs();
+    set_fs(get_ds());
+
+    ret = vfs_read(file, data, size, &offset);
+
+    set_fs(oldfs);
+    return ret;
+} 
+
 // Return value 0-100
 int get_cpu_usage(void)
 {
     char *buf = kmalloc(48, GFP_KERNEL);
 
     // Read the cpu status from /proc/stat
-    FILE *fp = fopen("/proc/stat", "r");
-    fread(buf, sizeof(char), 48, fp);
-    fclose(fp);
+    struct file *fp = file_open("/proc/stat", O_WRONLY|O_CREAT, 0644);
+    file_read(fp, 48, buf, sizeof(char));
+    file_close(fp);
 
     // Strip the prefixed "cpu  "
     cpuline = kmalloc(48, GFP_KERNEL);
