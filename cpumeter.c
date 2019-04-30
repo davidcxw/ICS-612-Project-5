@@ -17,7 +17,7 @@ int get_cpu_usage();
 
 int main()
 {
-    printf("CPU LED Meter, Version %s\n", VERSION);
+    //printf("CPU LED Meter, Version %s\n", VERSION);
 
     //initialise();
 
@@ -28,7 +28,7 @@ while(1)
         sleep(1);
         //delay(250);
         count += 1;
-        if(count > 10) {
+        if(count > 100) {
             break;
         }
     }
@@ -50,7 +50,7 @@ void initialise()
         printf("wiringPiSetup() failed!\n");
         exit(1);
     }
-
+    ///sys/devices/virtual/LedBlink/LedBlink/period
     printf("Initialise GPIO pins...\n");
 
     // Initalise all LED's and default them off
@@ -71,11 +71,21 @@ void update()
     //    digitalWrite(i, 0);
 
     float cpu_usage = get_cpu_usage();
-    printf("cpu_usage: %f\n", cpu_usage);
-    int leds_lit = cpu_usage/(100/(number_leds));
-    printf("leds_lit: %d\n", leds_lit);
+    //printf("cpu_usage: %f\n", cpu_usage);
+    int leds_lit = 10 * cpu_usage/(100/(number_leds));
+    //leds_lit = 40;
+    //printf("leds_lit: %d\n", leds_lit);
+    //printf("%d", leds_lit);
     //for(int i=0; i < leds_lit; i++)
     //    digitalWrite(i, 1);
+    FILE *fp;
+    //char str[] = "This is tutorialspoint.com";
+    //fp = fopen( "new_file" , "w" );
+    fp = fopen("/sys/devices/virtual/LedBlink/LedBlink/period", "w");
+    //fwrite(str , 1 , sizeof(str) , fp );
+    //fwrite(&leds_lit , sizeof(leds_lit), 1, fp );
+    fprintf(fp, "%d", leds_lit);
+    fclose(fp);
 }
 
 int previous_tjif = 0;
@@ -101,7 +111,7 @@ int get_cpu_usage()
     //for(int i = 0; i < strlen(buf); i++) {
     //    printf("%s", buf[i]);
     //}
-    printf("%s", cpuline);
+    //printf("%s", cpuline);
 
     // Parse the proc/stat information into seperate jiffie containers
     int user_jif, nice_jif, system_jif, idle_jif;
@@ -117,24 +127,24 @@ int get_cpu_usage()
     idle_jif = atoi(tokbuf);
     tokbuf = strtok(NULL, " ");
     iowait_jif = atoi(tokbuf);
-    printf("\n%d", user_jif);
-    printf("\n%d", nice_jif);
-    printf("\n%d", system_jif);
-    printf("\n%d", idle_jif);
-    printf("\n%d", iowait_jif);
+    //printf("\n%d", user_jif);
+    //printf("\n%d", nice_jif);
+    //printf("\n%d", system_jif);
+    //printf("\n%d", idle_jif);
+    //printf("\n%d", iowait_jif);
 
     // Get the workload from that
     int tjif = user_jif + nice_jif + system_jif + idle_jif + iowait_jif;
-    printf("\n%d", tjif);
+    //printf("\n%d", tjif);
 
     int delta_total = tjif - previous_tjif;
-    printf("\n%d", delta_total);
+    //printf("\n%d", delta_total);
     
     int delta_idle = idle_jif - previous_ijif;
-    printf("\n%d", delta_idle);
+    //printf("\n%d", delta_idle);
     
     int delta_usage = (1000*(delta_total-delta_idle)/(delta_total+5))/10;
-    printf("\n%d\n", delta_usage);
+    //printf("\n%d\n", delta_usage);
     
     previous_tjif = tjif;
     previous_ijif = idle_jif;
