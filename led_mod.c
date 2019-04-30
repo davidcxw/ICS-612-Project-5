@@ -24,7 +24,8 @@ MODULE_LICENSE("GPL");
 #define L8 22
 
 MODULE_LICENSE("GPL");
-int num_leds;
+//int num_leds;
+long num_leds;
 int i;
 int leds[10];
 struct file *fp;
@@ -41,13 +42,14 @@ static ssize_t set_period_callback(struct device* dev,
     size_t count)
 {
     long period_value = 0;
+    
     //int period_value = 0;
     if (kstrtol(buf, 10, &period_value) < 0)
         return -EINVAL;
     if (period_value < 10)	//Safety check
     	return - EINVAL;
     //printk("%ld", period_value);
-    num_leds = period_value;
+    num_leds = period_value / 10;
     //s_BlinkPeriod = period_value;
     for(i = 1; i < num_leds + 1; i++){
       gpio_set_value(leds[i], true);
